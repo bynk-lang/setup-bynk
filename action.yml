@@ -1,7 +1,6 @@
 name: Setup Bynk
 description: >-
-  Install the Bynk toolchain (bynkc, bynk, bynkc-lsp) from prebuilt release
-  archives and put it on PATH, with tool-cache support.
+  Install the Bynk toolchain (bynkc, bynk, bynkc-lsp).
 author: bynk-lang
 
 branding:
