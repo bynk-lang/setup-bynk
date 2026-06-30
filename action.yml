@@ -1,0 +1,84 @@
+name: Setup Bynk
+description: >-
+  Install the Bynk toolchain (bynkc, bynk, bynkc-lsp) from prebuilt release
+  archives and put it on PATH, with tool-cache support.
+author: bynk-lang
+
+branding:
+  icon: download
+  color: purple
+
+inputs:
+  version:
+    description: >-
+      Bynk version to install: an exact version ("0.107.0" or "v0.107.0") or
+      "latest" to resolve the newest GitHub release.
+    required: false
+    default: latest
+  repository:
+    description: >-
+      The GitHub repository that publishes Bynk releases, as "owner/name".
+      Defaults to the canonical release repository.
+    required: false
+    default: accuser/bynk
+  components:
+    description: >-
+      Space-separated extra components to keep on PATH beyond bynkc + bynk.
+      Currently recognised: "lsp" (keeps bynkc-lsp). All binaries are extracted
+      regardless; this only documents intent.
+    required: false
+    default: ""
+  github-token:
+    description: >-
+      Token used for GitHub API calls (version resolution, downloads) to avoid
+      rate limits. Defaults to the job token.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  version:
+    description: The resolved Bynk version that was installed (e.g. "v0.107.0").
+    value: ${{ steps.resolve.outputs.version }}
+  bindir:
+    description: Absolute path to the directory containing the Bynk binaries.
+    value: ${{ steps.resolve.outputs.bindir }}
+  cache-hit:
+    description: Whether the toolchain was restored from the tool cache (true/false).
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve version and target
+      id: resolve
+      shell: bash
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: ${{ github.action_path }}/scripts/install.sh resolve
+
+    - name: Restore tool cache
+      id: cache
+      uses: actions/cache@v4 # pin to a release SHA before publishing
+      with:
+        path: ${{ steps.resolve.outputs.bindir }}
+        key: bynk-${{ steps.resolve.outputs.version }}-${{ steps.resolve.outputs.target }}
+
+    - name: Download and install
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        GH_TOKEN: ${{ inputs.github-token }}
+        RESOLVED_VERSION: ${{ steps.resolve.outputs.version }}
+        RESOLVED_TARGET: ${{ steps.resolve.outputs.target }}
+        RESOLVED_BINDIR: ${{ steps.resolve.outputs.bindir }}
+        RESOLVED_EXT: ${{ steps.resolve.outputs.ext }}
+      run: ${{ github.action_path }}/scripts/install.sh download
+
+    - name: Add to PATH and verify
+      shell: bash
+      env:
+        RESOLVED_BINDIR: ${{ steps.resolve.outputs.bindir }}
+      run: ${{ github.action_path }}/scripts/install.sh activate
