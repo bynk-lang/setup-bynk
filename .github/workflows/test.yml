@@ -1,0 +1,168 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Bynk version to test, exact or "latest" (empty for the pinned baseline)
+        type: string
+        default: ""
+  # bynk-canary.yml calls this at each new Bynk release.
+  workflow_call:
+    inputs:
+      version:
+        description: Bynk version to test, exact or "latest" (empty for the pinned baseline)
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+# Push and pull_request runs use the pinned baseline, so a red build means the
+# change broke something, not that a new release came out. Bump it deliberately.
+env:
+  BYNK_VERSION: ${{ inputs.version || '0.307.0' }}
+
+jobs:
+  # Every target Bynk publishes a binary for (accuser/bynk release.yml).
+  install:
+    name: Install (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: setup-bynk
+        id: setup
+        uses: ./
+        with:
+          version: ${{ env.BYNK_VERSION }}
+
+      - name: Assert on the install
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.setup.outputs.version }}
+          BINDIR: ${{ steps.setup.outputs.bindir }}
+          CACHE_HIT: ${{ steps.setup.outputs.cache-hit }}
+        run: |
+          set -uo pipefail
+          failed=0
+          fail() { echo "::error::$*"; failed=1; }
+          if [ "$BYNK_VERSION" = latest ]; then
+            want="$(gh api repos/accuser/bynk/releases/latest --jq .tag_name)"
+          else
+            want="v${BYNK_VERSION#v}"
+          fi
+          echo "version=$VERSION bindir=$BINDIR cache-hit=$CACHE_HIT (want $want)"
+          [ "$VERSION" = "$want" ] || fail "version output is '$VERSION', expected '$want'"
+          case "$CACHE_HIT" in true|false) ;; *) fail "cache-hit output is '$CACHE_HIT'" ;; esac
+          ext=""; [ "$RUNNER_OS" = Windows ] && ext=".exe"
+          for bin in bynkc bynk bynkc-lsp; do
+            [ -f "$BINDIR/$bin$ext" ] || fail "$bin$ext is not in $BINDIR"
+          done
+          # On PATH, and the version installed is the version asked for.
+          got="$(bynkc --version)" || fail "bynkc --version failed"
+          [ "$got" = "bynkc ${want#v}" ] || fail "bynkc --version printed '$got', expected 'bynkc ${want#v}'"
+          bynk --version >/dev/null || fail "bynk --version failed"
+          exit "$failed"
+
+      - name: The toolchain checks and tests a project
+        shell: bash
+        working-directory: test/fixture
+        run: |
+          bynkc check --format short .
+          bynkc test .
+
+  # The first job saved the toolchain to the Actions cache; a later job restores it.
+  cache:
+    name: A second install hits the cache
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: setup-bynk
+        id: setup
+        uses: ./
+        with:
+          version: ${{ env.BYNK_VERSION }}
+      - name: Assert the cache hit
+        shell: bash
+        env:
+          CACHE_HIT: ${{ steps.setup.outputs.cache-hit }}
+        run: |
+          [ "$CACHE_HIT" = true ] || { echo "::error::cache-hit was '$CACHE_HIT', expected 'true'"; exit 1; }
+          bynkc --version
+
+  versions:
+    name: Version forms and refusals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: latest
+        id: latest
+        uses: ./
+        with:
+          version: latest
+
+      - name: An exact version with a leading v
+        id: with-v
+        uses: ./
+        with:
+          version: v0.307.0
+
+      - name: An exact version without one
+        id: bare
+        uses: ./
+        with:
+          version: 0.307.0
+
+      - name: A version with no release
+        id: missing
+        continue-on-error: true
+        uses: ./
+        with:
+          version: 0.0.1
+
+      - name: A repository with no releases
+        id: no-repo
+        continue-on-error: true
+        uses: ./
+        with:
+          version: latest
+          repository: bynk-lang/no-such-repository
+
+      - name: Assert
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ steps.latest.outputs.version }}
+          WITH_V: ${{ steps.with-v.outputs.version }}
+          BARE: ${{ steps.bare.outputs.version }}
+          MISSING: ${{ steps.missing.outcome }}
+          NO_REPO: ${{ steps.no-repo.outcome }}
+        run: |
+          failed=0
+          expect() { # <what> <got> <want>
+            if [ "$2" = "$3" ]; then echo "ok: $1 = $2"
+            else echo "::error::$1 was '$2', expected '$3'"; failed=1; fi
+          }
+          expect "latest" "$LATEST" "$(gh api repos/accuser/bynk/releases/latest --jq .tag_name)"
+          expect "v0.307.0" "$WITH_V" v0.307.0
+          expect "0.307.0" "$BARE" v0.307.0
+          expect "a version with no release" "$MISSING" failure
+          expect "a repository with no releases" "$NO_REPO" failure
+          exit "$failed"
