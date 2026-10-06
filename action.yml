@@ -43,7 +43,7 @@ outputs:
     value: ${{ steps.resolve.outputs.bindir }}
   cache-hit:
     description: Whether the toolchain was restored from the tool cache (true/false).
-    value: ${{ steps.cache.outputs.cache-hit }}
+    value: ${{ steps.cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
 
 runs:
   using: composite
@@ -55,7 +55,7 @@ runs:
         INPUT_VERSION: ${{ inputs.version }}
         INPUT_REPOSITORY: ${{ inputs.repository }}
         GH_TOKEN: ${{ inputs.github-token }}
-      run: ${{ github.action_path }}/scripts/install.sh resolve
+      run: bash "$GITHUB_ACTION_PATH/scripts/install.sh" resolve
 
     - name: Restore tool cache
       id: cache
@@ -74,10 +74,10 @@ runs:
         RESOLVED_TARGET: ${{ steps.resolve.outputs.target }}
         RESOLVED_BINDIR: ${{ steps.resolve.outputs.bindir }}
         RESOLVED_EXT: ${{ steps.resolve.outputs.ext }}
-      run: ${{ github.action_path }}/scripts/install.sh download
+      run: bash "$GITHUB_ACTION_PATH/scripts/install.sh" download
 
     - name: Add to PATH and verify
       shell: bash
       env:
         RESOLVED_BINDIR: ${{ steps.resolve.outputs.bindir }}
-      run: ${{ github.action_path }}/scripts/install.sh activate
+      run: bash "$GITHUB_ACTION_PATH/scripts/install.sh" activate
