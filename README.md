@@ -48,7 +48,8 @@ Pin an exact version for reproducible CI:
   plus a `SHA256SUMS` manifest — the layout produced by the Bynk `release.yml`.
 - `repository` defaults to `accuser/bynk`. If the canonical release repository
   moves under the `bynk-lang` org, update this default (or set the input).
-- Before publishing, re-pin `actions/cache` in `action.yml` to a commit SHA.
+- `actions/cache` is pinned to a commit SHA (v6.1.0), which runs on Node.js 24
+  and needs Actions Runner 2.327.1 or newer on self-hosted runners.
 
 ## License
 
