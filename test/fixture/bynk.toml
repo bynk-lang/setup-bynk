@@ -1,0 +1,4 @@
+# Fixture for setup-bynk's tests: one context, one test.
+[project]
+name = "setup-bynk-fixture"
+version = "0.1.0"
