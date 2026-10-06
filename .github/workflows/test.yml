@@ -75,19 +75,21 @@ jobs:
           bynk --version >/dev/null || fail "bynk --version failed"
           exit "$failed"
 
-      # `bynkc test` runs the emitted TypeScript, so it needs `tsc` (or `tsx`)
-      # on PATH. The Windows runner image has neither; install it everywhere,
-      # range-pinned to major 5 as accuser/bynk's release workflow does.
-      - name: Install TypeScript
-        shell: bash
-        run: npm install -g typescript@5
-
-      - name: The toolchain checks and tests a project
+      - name: The toolchain checks a project
         shell: bash
         working-directory: test/fixture
-        run: |
-          bynkc check --format short .
-          bynkc test .
+        run: bynkc check --format short .
+
+      # `bynkc test` runs the emitted TypeScript with `tsc` from PATH. Not on
+      # Windows: bynkc finds npm's `tsc.cmd` but spawns the bare name `tsc`,
+      # which Rust's Command resolves to `tsc.exe` only, so it reports that
+      # neither tsc nor tsx is installed. Re-enable once bynkc spawns the path
+      # it resolved.
+      - name: The toolchain tests a project
+        if: runner.os != 'Windows'
+        shell: bash
+        working-directory: test/fixture
+        run: bynkc test .
 
   # The first job saved the toolchain to the Actions cache; a later job restores it.
   cache:
