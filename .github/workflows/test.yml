@@ -24,7 +24,7 @@ permissions:
 # Push and pull_request runs use the pinned baseline, so a red build means the
 # change broke something, not that a new release came out. Bump it deliberately.
 env:
-  BYNK_VERSION: ${{ inputs.version || '0.307.0' }}
+  BYNK_VERSION: ${{ inputs.version || '0.309.0' }}
 
 jobs:
   # Every target Bynk publishes a binary for (accuser/bynk release.yml).
@@ -80,13 +80,7 @@ jobs:
         working-directory: test/fixture
         run: bynkc check --format short .
 
-      # `bynkc test` runs the emitted TypeScript with `tsc` from PATH. Not on
-      # Windows: bynkc finds npm's `tsc.cmd` but spawns the bare name `tsc`,
-      # which Rust's Command resolves to `tsc.exe` only, so it reports that
-      # neither tsc nor tsx is installed. Re-enable once bynkc spawns the path
-      # it resolved.
       - name: The toolchain tests a project
-        if: runner.os != 'Windows'
         shell: bash
         working-directory: test/fixture
         run: bynkc test .
