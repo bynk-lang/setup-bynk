@@ -13,7 +13,7 @@ Supported runners: Linux (x86_64, aarch64), macOS (x86_64, aarch64), Windows
 ```yaml
 - uses: bynk-lang/setup-bynk@v1
   with:
-    version: latest        # or an exact version like 0.107.0
+    version: latest        # or an exact version like 0.330.4
 - run: bynkc --version
 ```
 
@@ -22,14 +22,14 @@ Pin an exact version for reproducible CI:
 ```yaml
 - uses: bynk-lang/setup-bynk@v1
   with:
-    version: 0.107.0
+    version: 0.330.4
 ```
 
 ## Inputs
 
 | Input          | Default        | Description |
 | -------------- | -------------- | ----------- |
-| `version`      | `latest`       | Exact version (`0.107.0` / `v0.107.0`) or `latest`. |
+| `version`      | `latest`       | Exact version (`0.330.4` / `v0.330.4`) or `latest`. |
 | `repository`   | `accuser/bynk` | The `owner/name` repo that publishes Bynk releases. |
 | `components`   | `""`           | Space-separated extras to keep (`lsp`). All binaries install regardless. |
 | `github-token` | `${{ github.token }}` | Token for API/download calls (avoids rate limits). |
@@ -38,7 +38,7 @@ Pin an exact version for reproducible CI:
 
 | Output      | Description |
 | ----------- | ----------- |
-| `version`   | The resolved version installed, e.g. `v0.107.0`. |
+| `version`   | The resolved version installed, e.g. `v0.330.4`. |
 | `bindir`    | Absolute path to the installed binaries. |
 | `cache-hit` | `true` when restored from the tool cache. |
 
