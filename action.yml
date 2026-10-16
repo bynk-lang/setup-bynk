@@ -19,7 +19,7 @@ inputs:
       The GitHub repository that publishes Bynk releases, as "owner/name".
       Defaults to the canonical release repository.
     required: false
-    default: accuser/bynk
+    default: bynk-lang/bynk
   components:
     description: >-
       Space-separated extra components to keep on PATH beyond bynkc + bynk.

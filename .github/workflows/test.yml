@@ -27,7 +27,7 @@ env:
   BYNK_VERSION: ${{ inputs.version || '0.309.0' }}
 
 jobs:
-  # Every target Bynk publishes a binary for (accuser/bynk release.yml).
+  # Every target Bynk publishes a binary for (bynk-lang/bynk release.yml).
   install:
     name: Install (${{ matrix.os }})
     strategy:
@@ -58,7 +58,7 @@ jobs:
           failed=0
           fail() { echo "::error::$*"; failed=1; }
           if [ "$BYNK_VERSION" = latest ]; then
-            want="$(gh api repos/accuser/bynk/releases/latest --jq .tag_name)"
+            want="$(gh api repos/bynk-lang/bynk/releases/latest --jq .tag_name)"
           else
             want="v${BYNK_VERSION#v}"
           fi
@@ -163,7 +163,7 @@ jobs:
             if [ "$2" = "$3" ]; then echo "ok: $1 = $2"
             else echo "::error::$1 was '$2', expected '$3'"; failed=1; fi
           }
-          expect "latest" "$LATEST" "$(gh api repos/accuser/bynk/releases/latest --jq .tag_name)"
+          expect "latest" "$LATEST" "$(gh api repos/bynk-lang/bynk/releases/latest --jq .tag_name)"
           expect "v0.307.0" "$WITH_V" v0.307.0
           expect "0.307.0" "$BARE" v0.307.0
           expect "a version with no release" "$MISSING" failure
