@@ -3,4 +3,6 @@ context canary
 ---
 A greeting for a name.
 ---
-fn greet(name: String) -> String { "Hello, \(name)!" }
+fn greet(name: String) -> String {
+	"Hello, \(name)!"
+}
