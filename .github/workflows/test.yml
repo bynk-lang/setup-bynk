@@ -21,10 +21,11 @@ on:
 permissions:
   contents: read
 
-# Push and pull_request runs use the pinned baseline, so a red build means the
-# change broke something, not that a new release came out. Bump it deliberately.
+# Push and pull_request runs use the version in BYNK_VERSION, so a red build
+# means the change broke something, not that a new release came out. The
+# canary proposes moving it once a newer release passes.
 env:
-  BYNK_VERSION: ${{ inputs.version || '0.309.0' }}
+  REQUESTED: ${{ inputs.version }}
 
 jobs:
   # Every target Bynk publishes a binary for (bynk-lang/bynk release.yml).
@@ -39,6 +40,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Choose the Bynk version
+        shell: bash
+        run: echo "BYNK_VERSION=${REQUESTED:-$(tr -d '[:space:]' < BYNK_VERSION)}" >> "$GITHUB_ENV"
 
       - name: setup-bynk
         id: setup
@@ -94,6 +99,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Choose the Bynk version
+        shell: bash
+        run: echo "BYNK_VERSION=${REQUESTED:-$(tr -d '[:space:]' < BYNK_VERSION)}" >> "$GITHUB_ENV"
       - name: setup-bynk
         id: setup
         uses: ./
@@ -140,6 +149,34 @@ jobs:
         with:
           version: 0.0.1
 
+      - name: A version file
+        id: file
+        uses: ./
+        with:
+          version-file: test/version-file/exact
+
+      - name: A version file and a version
+        id: file-and-version
+        continue-on-error: true
+        uses: ./
+        with:
+          version: 0.307.0
+          version-file: test/version-file/exact
+
+      - name: A version file that does not exist
+        id: file-missing
+        continue-on-error: true
+        uses: ./
+        with:
+          version-file: test/version-file/none
+
+      - name: A version file holding latest
+        id: file-latest
+        continue-on-error: true
+        uses: ./
+        with:
+          version-file: test/version-file/latest
+
       - name: A repository with no releases
         id: no-repo
         continue-on-error: true
@@ -156,6 +193,10 @@ jobs:
           WITH_V: ${{ steps.with-v.outputs.version }}
           BARE: ${{ steps.bare.outputs.version }}
           MISSING: ${{ steps.missing.outcome }}
+          FILE: ${{ steps.file.outputs.version }}
+          FILE_AND_VERSION: ${{ steps.file-and-version.outcome }}
+          FILE_MISSING: ${{ steps.file-missing.outcome }}
+          FILE_LATEST: ${{ steps.file-latest.outcome }}
           NO_REPO: ${{ steps.no-repo.outcome }}
         run: |
           failed=0
@@ -167,5 +208,9 @@ jobs:
           expect "v0.307.0" "$WITH_V" v0.307.0
           expect "0.307.0" "$BARE" v0.307.0
           expect "a version with no release" "$MISSING" failure
+          expect "a version file" "$FILE" v0.307.0
+          expect "a version file and a version" "$FILE_AND_VERSION" failure
+          expect "a version file that does not exist" "$FILE_MISSING" failure
+          expect "a version file holding latest" "$FILE_LATEST" failure
           expect "a repository with no releases" "$NO_REPO" failure
           exit "$failed"

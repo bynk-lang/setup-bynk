@@ -14,6 +14,13 @@ inputs:
       "latest" to resolve the newest GitHub release.
     required: false
     default: latest
+  version-file:
+    description: >-
+      A file holding the exact Bynk version to install ("0.404.0" or
+      "v0.404.0"), such as the repository's BYNK_VERSION. Its path is relative
+      to the workspace. Use this or version, not both.
+    required: false
+    default: ""
   repository:
     description: >-
       The GitHub repository that publishes Bynk releases, as "owner/name".
@@ -53,6 +60,7 @@ runs:
       shell: bash
       env:
         INPUT_VERSION: ${{ inputs.version }}
+        INPUT_VERSION_FILE: ${{ inputs.version-file }}
         INPUT_REPOSITORY: ${{ inputs.repository }}
         GH_TOKEN: ${{ inputs.github-token }}
       run: bash "$GITHUB_ACTION_PATH/scripts/install.sh" resolve
