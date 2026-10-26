@@ -48,6 +48,16 @@ target_triple() {
 cmd_resolve() {
   local repo="${INPUT_REPOSITORY:?}" want="${INPUT_VERSION:-latest}" version target ext bindir
   target="$(target_triple)"
+
+  # A pin file holds one exact version; whitespace around it is ignored.
+  local file="${INPUT_VERSION_FILE:-}"
+  if [ -n "$file" ]; then
+    [ "$want" = latest ] || die "set version or version-file, not both"
+    [ -f "$file" ] || die "version-file ${file} does not exist"
+    want="$(tr -d '[:space:]' < "$file")"
+    [[ "$want" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]] \
+      || die "version-file ${file} must hold an exact version such as 0.404.0, not '${want}'"
+  fi
   case "$target" in
     *windows*) ext="zip" ;;
     *)         ext="tar.gz" ;;

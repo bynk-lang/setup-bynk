@@ -25,11 +25,22 @@ Pin an exact version for reproducible CI:
     version: 0.377.2
 ```
 
+Or keep the pin in a file, so every workflow in the repository reads the same
+one and a tool can move it in one place (the org canary's bump pull requests
+do):
+
+```yaml
+- uses: bynk-lang/setup-bynk@v1
+  with:
+    version-file: BYNK_VERSION   # holds e.g. 0.377.2
+```
+
 ## Inputs
 
 | Input          | Default        | Description |
 | -------------- | -------------- | ----------- |
 | `version`      | `latest`       | Exact version (`0.377.2` / `v0.377.2`) or `latest`. |
+| `version-file` | `""`           | A file holding an exact version, such as `BYNK_VERSION`, relative to the workspace. Whitespace around the version is ignored. Use this or `version`, not both. |
 | `repository`   | `bynk-lang/bynk` | The `owner/name` repo that publishes Bynk releases. |
 | `components`   | `""`           | Space-separated extras to keep (`lsp`). All binaries install regardless. |
 | `github-token` | `${{ github.token }}` | Token for API/download calls (avoids rate limits). |
