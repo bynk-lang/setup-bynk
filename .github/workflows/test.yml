@@ -71,24 +71,23 @@ jobs:
           [ "$VERSION" = "$want" ] || fail "version output is '$VERSION', expected '$want'"
           case "$CACHE_HIT" in true|false) ;; *) fail "cache-hit output is '$CACHE_HIT'" ;; esac
           ext=""; [ "$RUNNER_OS" = Windows ] && ext=".exe"
-          for bin in bynkc bynk bynkc-lsp; do
+          for bin in bynk bynk-lsp; do
             [ -f "$BINDIR/$bin$ext" ] || fail "$bin$ext is not in $BINDIR"
           done
           # On PATH, and the version installed is the version asked for.
-          got="$(bynkc --version)" || fail "bynkc --version failed"
-          [ "$got" = "bynkc ${want#v}" ] || fail "bynkc --version printed '$got', expected 'bynkc ${want#v}'"
-          bynk --version >/dev/null || fail "bynk --version failed"
+          got="$(bynk --version)" || fail "bynk --version failed"
+          [ "$got" = "bynk ${want#v}" ] || fail "bynk --version printed '$got', expected 'bynk ${want#v}'"
           exit "$failed"
 
       - name: The toolchain checks a project
         shell: bash
         working-directory: test/fixture
-        run: bynkc check --format short .
+        run: bynk check --format short .
 
       - name: The toolchain tests a project
         shell: bash
         working-directory: test/fixture
-        run: bynkc test .
+        run: bynk test .
 
   # The first job saved the toolchain to the Actions cache; a later job restores it.
   cache:
@@ -114,7 +113,7 @@ jobs:
           CACHE_HIT: ${{ steps.setup.outputs.cache-hit }}
         run: |
           [ "$CACHE_HIT" = true ] || { echo "::error::cache-hit was '$CACHE_HIT', expected 'true'"; exit 1; }
-          bynkc --version
+          bynk --version
 
   versions:
     name: Version forms and refusals

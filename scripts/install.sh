@@ -6,7 +6,7 @@
 #   resolve   Determine the version tag, target triple, archive extension, and
 #             install dir. Writes step outputs: version, target, ext, bindir.
 #   download  Fetch the release archive + SHA256SUMS, verify, extract to bindir.
-#   activate  Add bindir to PATH (GITHUB_PATH) and print bynkc --version.
+#   activate  Add bindir to PATH (GITHUB_PATH) and print bynk --version.
 set -euo pipefail
 
 # --- helpers ---------------------------------------------------------------
@@ -123,7 +123,7 @@ cmd_download() {
   esac
   # Flatten the inner dir into bindir.
   cp -R "${tmp}/${stem}/." "$bindir/"
-  chmod +x "$bindir"/bynkc "$bindir"/bynk "$bindir"/bynkc-lsp 2>/dev/null || true
+  chmod +x "$bindir"/bynk "$bindir"/bynk-lsp 2>/dev/null || true
   rm -rf "$tmp"
   echo "Installed into ${bindir}"
 }
@@ -133,7 +133,7 @@ cmd_activate() {
   echo "$bindir" >> "${GITHUB_PATH:?}"
   export PATH="${bindir}:${PATH}"
   echo "Bynk on PATH:"
-  "${bindir}/bynkc" --version || die "bynkc failed to run after install"
+  "${bindir}/bynk" --version || die "bynk failed to run after install"
 }
 
 case "${1:-}" in

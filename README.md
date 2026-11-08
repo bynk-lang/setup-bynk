@@ -1,7 +1,7 @@
 # setup-bynk
 
-Install the [Bynk](https://github.com/bynk-lang/bynk) toolchain — `bynkc`, the
-`bynk` driver, and `bynkc-lsp` — on a GitHub Actions runner and add it to
+Install the [Bynk](https://github.com/bynk-lang/bynk) toolchain — `bynk` CLI and
+language server (`bynk-lsp`) — on a GitHub Actions runner and add it to
 `PATH`. Downloads the prebuilt release archive for the runner's OS/arch, verifies
 it against the release `SHA256SUMS`, and caches it in the Actions tool cache.
 
@@ -14,7 +14,7 @@ Supported runners: Linux (x86_64, aarch64), macOS (x86_64, aarch64), Windows
 - uses: bynk-lang/setup-bynk@v1
   with:
     version: latest        # or an exact version like 0.377.2
-- run: bynkc --version
+- run: bynk --version
 ```
 
 Pin an exact version for reproducible CI:
