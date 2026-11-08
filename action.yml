@@ -1,6 +1,6 @@
 name: Setup Bynk
 description: >-
-  Install the Bynk toolchain (bynkc, bynk, bynkc-lsp).
+  Install the Bynk toolchain (bynk, bynk-lsp).
 author: bynk-lang
 
 branding:
@@ -29,8 +29,8 @@ inputs:
     default: bynk-lang/bynk
   components:
     description: >-
-      Space-separated extra components to keep on PATH beyond bynkc + bynk.
-      Currently recognised: "lsp" (keeps bynkc-lsp). All binaries are extracted
+      Space-separated extra components to keep on PATH beyond bynk.
+      Currently recognised: "lsp" (keeps bynk-lsp). All binaries are extracted
       regardless; this only documents intent.
     required: false
     default: ""
