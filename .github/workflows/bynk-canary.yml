@@ -9,7 +9,7 @@
 # Two things run at the dispatched version:
 # - `tests`: test.yml, this repository's own tests (`uses: ./`): the install on
 #   every target Bynk publishes, the cache, the version forms and refusals.
-# - `canary`: the released setup-bynk@v1 (through canary.yml, with bynk-ci@v1)
+# - `canary`: the released setup-bynk@v2 (through canary.yml, with bynk-ci@v1)
 #   checking and testing the fixture, the way users run it.
 # `tests`' result is passed in as `upstream-result`, so a break in either
 # opens or updates the one `canary` issue.
