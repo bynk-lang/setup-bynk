@@ -11,7 +11,7 @@ Supported runners: Linux (x86_64, aarch64), macOS (x86_64, aarch64), Windows
 ## Usage
 
 ```yaml
-- uses: bynk-lang/setup-bynk@v1
+- uses: bynk-lang/setup-bynk@v2
   with:
     version: latest        # or an exact version like 0.377.2
 - run: bynk --version
@@ -20,7 +20,7 @@ Supported runners: Linux (x86_64, aarch64), macOS (x86_64, aarch64), Windows
 Pin an exact version for reproducible CI:
 
 ```yaml
-- uses: bynk-lang/setup-bynk@v1
+- uses: bynk-lang/setup-bynk@v2
   with:
     version: 0.377.2
 ```
@@ -30,7 +30,7 @@ one and a tool can move it in one place (the org canary's bump pull requests
 do):
 
 ```yaml
-- uses: bynk-lang/setup-bynk@v1
+- uses: bynk-lang/setup-bynk@v2
   with:
     version-file: BYNK_VERSION   # holds e.g. 0.377.2
 ```
