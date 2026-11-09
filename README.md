@@ -43,7 +43,7 @@ do):
 | `version-file` | `""`           | A file holding an exact version, such as `BYNK_VERSION`, relative to the workspace. Whitespace around the version is ignored. Use this or `version`, not both. |
 | `repository`   | `bynk-lang/bynk` | The `owner/name` repo that publishes Bynk releases. |
 | `components`   | `""`           | Space-separated extras to keep (`lsp`). All binaries install regardless. |
-| `github-token` | `${{ github.token }}` | Token for API/download calls (avoids rate limits). |
+| `github-token` | `${{ github.token }}` | Token for the API calls that resolve and download the release. Downloads go only through the authenticated API, so it must not be empty. |
 
 ## Outputs
 
