@@ -96,16 +96,28 @@ cmd_download() {
   local ext="${RESOLVED_EXT:?}" bindir="${RESOLVED_BINDIR:?}"
   local stem="bynk-${version}-${target}"
   local archive="${stem}.${ext}"
-  local base="https://github.com/${repo}/releases/download/${version}"
   local tmp; tmp="$(mktemp -d)"
-  local auth=()
-  [ -n "${GH_TOKEN:-}" ] && auth=(-H "Authorization: Bearer ${GH_TOKEN}")
 
+  # Through the API with the token: the github.com/<repo>/releases/download
+  # route ignores tokens and answers 504s under load, so it is never used.
+  # Look the assets up by tag, then fetch each by id. curl drops the
+  # Authorization header when the API redirects to the asset host, so the
+  # token never leaves api.github.com.
+  [ -n "${GH_TOKEN:-}" ] || die "github-token is empty; setup-bynk downloads only through the authenticated API"
+  local api="https://api.github.com/repos/${repo}/releases"
+  local release
   echo "Downloading ${archive}"
-  curl -fSL "${auth[@]}" -o "${tmp}/${archive}" "${base}/${archive}" \
-    || die "download failed: ${base}/${archive}"
-  curl -fSL "${auth[@]}" -o "${tmp}/SHA256SUMS" "${base}/SHA256SUMS" \
-    || die "download failed: ${base}/SHA256SUMS"
+  release="$(curl -fsSL --retry 3 -H "Authorization: Bearer ${GH_TOKEN}" "${api}/tags/${version}")" \
+    || die "could not look up release ${version} of ${repo}"
+  fetch_asset() {
+    local id
+    id="$(jq -r --arg name "$1" '.assets[] | select(.name == $name) | .id' <<<"$release")"
+    [ -n "$id" ] || die "release ${version} of ${repo} has no asset $1"
+    curl -fSL --retry 3 -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/octet-stream" \
+      -o "$2" "${api}/assets/${id}" || die "download failed: $1 (${version})"
+  }
+  fetch_asset "${archive}" "${tmp}/${archive}"
+  fetch_asset SHA256SUMS "${tmp}/SHA256SUMS"
 
   # Verify against the SHA256SUMS manifest (basenames, two-space separated).
   local want got

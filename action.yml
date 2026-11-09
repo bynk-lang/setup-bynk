@@ -36,8 +36,9 @@ inputs:
     default: ""
   github-token:
     description: >-
-      Token used for GitHub API calls (version resolution, downloads) to avoid
-      rate limits. Defaults to the job token.
+      Token for the GitHub API calls that resolve the version and download the
+      release. Required: downloads go only through the authenticated API.
+      Defaults to the job token.
     required: false
     default: ${{ github.token }}
 
