@@ -11,16 +11,18 @@ Supported runners: Linux (x86_64, aarch64), macOS (x86_64, aarch64), Windows
 ## Usage
 
 ```yaml
-- uses: bynk-lang/setup-bynk@v2
+- uses: bynk-lang/setup-bynk@3ee807123be2578fd5d5be518fbc2b489aef6171 # v2.0.1
   with:
     version: latest        # or an exact version like 0.377.2
 - run: bynk --version
 ```
 
+> The org requires actions pinned to a full commit SHA, so these examples name the commit for `v2.0.1` with the version in a comment, which Dependabot reads to propose updates. To pin another release, find its commit with `git ls-remote https://github.com/bynk-lang/setup-bynk 'refs/tags/v*^{}'`.
+
 Pin an exact version for reproducible CI:
 
 ```yaml
-- uses: bynk-lang/setup-bynk@v2
+- uses: bynk-lang/setup-bynk@3ee807123be2578fd5d5be518fbc2b489aef6171 # v2.0.1
   with:
     version: 0.377.2
 ```
@@ -30,7 +32,7 @@ one and a tool can move it in one place (the org canary's bump pull requests
 do):
 
 ```yaml
-- uses: bynk-lang/setup-bynk@v2
+- uses: bynk-lang/setup-bynk@3ee807123be2578fd5d5be518fbc2b489aef6171 # v2.0.1
   with:
     version-file: BYNK_VERSION   # holds e.g. 0.377.2
 ```
